@@ -1,0 +1,48 @@
+name: Epic Games Free Games Notifier
+
+on:
+  schedule:
+    # Run every 6 hours (at minute 0)
+    - cron: "0 */6 * * *"
+  workflow_dispatch: # Allow manual trigger from the GitHub UI
+
+permissions:
+  contents: write # Needed to commit the updated last_games.json
+
+jobs:
+  check-free-games:
+    name: Check and Notify
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out the repository (including last_games.json)
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Set up Python
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # 4. Run the notifier
+      - name: Run notifier
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python main.py
+
+      # 5. Commit updated last_games.json only if it changed
+      - name: Commit updated game list
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add last_games.json
+          # Only commit if the file actually changed
+          git diff --cached --quiet || git commit -m "chore: update last_games.json [skip ci]"
+          git push
