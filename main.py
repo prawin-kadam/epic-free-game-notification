@@ -160,14 +160,14 @@ def build_notification_message(games: list[dict]) -> str:
     if not games:
         return "🎮 No free games are available on Epic Games Store right now."
 
-    lines = ["🎮 *New Epic Games Free Titles!*", ""]
+    lines = ["🎮 <b>New Epic Games Free Titles!</b>", ""]
     for game in games:
         lines.append(f"• {game['title']}")
     lines += [
         "",
-        "Claim them before the offer expires\\.",
+        "Claim them before the offer expires.",
         "",
-        f"[Epic Games Store]({config.EPIC_STORE_URL})",
+        f'<a href="{config.EPIC_STORE_URL}">Epic Games Store</a>',
     ]
     return "\n".join(lines)
 
@@ -196,7 +196,7 @@ def send_telegram_message(text: str) -> bool:
     payload = {
         "chat_id": chat_id,
         "text": text,
-        "parse_mode": "MarkdownV2",
+        "parse_mode": "HTML",
         "disable_web_page_preview": False,
     }
 
